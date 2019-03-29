@@ -20,11 +20,23 @@ const bioanalysis = (arr1, arr2) => {
 };
 
 
-// Нормализация с использованием минимаксной функции.
+/**
+ * 
+ * @param {Number} val текущее значение
+ * @param {Number} min минимальное значение
+ * @param {Number} max максимальное значение
+ * @returns {Number} значение в диапозоне от 0 до 1
+ */
 const miniMax = (val, min, max) => {
     const [minV, maxV] = [0, 1];
-    return (((val - min) * (maxV - minV)) / (max - min)) + minV
+    return val != 0 ? ((val - min) * (maxV - minV)) / (max - min) : 0;
 };
+/**
+ * 
+ * @param {Number} cur текущее значение
+ * @param {Array} arr массив значений минимума и максимума соответственно
+ * @returns {miniMax} функция miniMax
+ */
 const miniMaxFromArray = (cur, arr) => {
     return miniMax(cur, arr[0], arr[1]);
 };
@@ -32,55 +44,37 @@ const miniMaxFromArray = (cur, arr) => {
 // Возвращает максмальное значение для параметра
 const normal = (name) => {
     const analysis = {
-        'Общий белок': [56, 80],
-        'Альбумин': [27, 40],
-        'Креатинин': [62, 177],
-        'Мочевина': [3.3, 6.7],
+        'Общий белок': [48, 100],
+        'Альбумин': [20, 40],
+        'Креатинин': [50, 177],
+        'Мочевина': [2.8, 10.9],
         'Билирубин общий': [3, 53],
-        'Глюкоза': [3.4, 8.3],
-        'АСТ': [123, 400],
-        'АЛТ': [0, 20.5],
+        'Глюкоза': [2.8, 20.8],
+        'АСТ': [0, 700],
+        'АЛТ': [0, 80],
         'Билирубин прямой': [0, 15],
-        'Билирубин непрямой': [0, 40], // not found взято рандомно
-        'Альфа-Амилаза': [0, 30], // not found взято рандомно
-        'Лактатдегидрогеназа': [13, 105] // not found взято рандомно
+        'Билирубин непрямой': [0, 20],
+        'Альфа-Амилаза': [0, 100],
+        'Лактатдегидрогеназа': [10, 300]
     }
     return analysis[name];
 }
 
 
-const getHemoglobin = (sex, years, curr) => {
-    if (years >= 65) {
-        return sex === 'М' ? miniMaxFromArray(curr, [125, 165]) : miniMaxFromArray(curr, [120, 157]);
-    } else {
-        return sex === 'М' ? miniMaxFromArray(curr, [130, 160]) : miniMaxFromArray(curr, [120, 155]);
-    }
-};
-
-const getErythrocyte = (years, curr) => {
-    const getMe = () => {
-        if (years >= 65) {
-            return [3.1, 5.7]
-        } else if (years >= 50) {
-            return [3.9, 5.6]
-        } else if (years >= 36) {
-            return [4.1, 5.6]
-        } else if (years >= 30) {
-            return [3.9, 5.5]
-        } else {
-            return [4.0, 5.8]
-        }
-    }
-    return miniMaxFromArray(curr,getMe());
-};
-
 const getNormalizeValueWithNull = (val) => val === null ? 0 : parseFloat(val);
-const getSex = (sex) => sex === 'М' ? 1 : 2;
+
+const getHemoglobin = (sex, years, curr) => miniMaxFromArray(curr, [0, 210]);
+const getErythrocyte = (years, curr) => miniMaxFromArray(curr,[3,6]);
+const getleukocyte = (curr) => miniMaxFromArray(curr,[0,20])
+const getSex = (sex) => sex === 'М' ? 2 : 3;
+const getTemperature = (val) => miniMax(val,32,42);
 
 module.exports = {
     'getBio': bioanalysis,
     'getSex': getSex,
     'getNormal': getNormalizeValueWithNull,
     'getHemoglobin': getHemoglobin,
-    'getErythrocyte': getErythrocyte
+    'getErythrocyte': getErythrocyte,
+    'getleukocyte': getleukocyte,
+    'getTemperature': getTemperature
 }
