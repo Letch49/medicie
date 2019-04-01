@@ -1,12 +1,11 @@
 const brain = require('brain.js');
 const _ = require('lodash');
-const testData = require('./data.json');
-const fs = require('fs');
+// const testData = require('./data.json');
+// const fs = require('fs');
 const fn = require('./analysis');
 
-const biochemistry_raw = testData['biochemistry_types'];
-
-const renderInput = e => {
+const renderInput = (e, biochemistry_types) => {
+    console.log(biochemistry_types)
     const newObj = {
         // "treatment": e.treatment,
         // "diagnosis": e.diagnosis,
@@ -29,7 +28,7 @@ const renderInput = e => {
         "erythrocyte:": fn.getErythrocyte(e.age, fn.getNormal(e.erythrocyte)),
         "leukocyte": fn.getleukocyte(e.age, fn.getNormal(e.leukocyte)),
         // "tongue": e.tongue,
-        "biochemistry": fn.getBio(biochemistry_raw, e.biochemistry_raw)
+        "biochemistry": fn.getBio(biochemistry_types, e.biochemistry_raw)
     }
     let arr = new Array();
     Object.keys(newObj).forEach(el => {
@@ -42,45 +41,12 @@ const renderOutput = e => {
     return { [e.hid]: 1 }
 };
 
-const renderAll = e => {
+const renderAll = (e, biochemistry_types)=> {
     return {
-        "input": renderInput(e),
+        "input": renderInput(e,biochemistry_types),
         "output": renderOutput(e)
     }
 }
-
-const eatMyNetwork = testData['list'].map(renderAll);
-
-
-fs.writeFileSync('mydata.json', JSON.stringify(eatMyNetwork));
-
-const data = JSON.parse(fs.readFileSync('mydata.json', 'utf8'));
-
-const network = new brain.NeuralNetwork();
-
-const run = network.train(data, {
-    errorThresh: 0.005,
-    iterations: 50000,
-    log: false,
-    logPeriod: 50,
-    learningRate: 0.2,
-    hiddenLayers: [20, 20, 5, 15, 3]
-});
-
-const test = testData['list'];
-
-let arr = new Array();
-test.forEach(e => {
-    const output = network.run(renderInput(e));
-    output['nowhid'] = e['hid'];
-    arr.push(output);
-});
-
-fs.writeFile('result.json', JSON.stringify(arr), (err) => {
-    if (err) {
-        console.log(err);
-    }
-});
 
 const optionsTest = {
     errorThresh: 0.005,
@@ -97,7 +63,9 @@ const optionsTest = {
  * @returns JSON объект, который необходимо сохранить в отдельный файл
  */
 const trainNetwork = (data, options = optionsTest) => {
-    const trainData = data['list'].map(renderAll);
+    const biochemistry_types = data['biochemistry_types'];
+    // console.log(data['list']);
+    const trainData = data['list'].map(e => renderAll(e, biochemistry_types));
     const network = new brain.NeuralNetwork();
     const train = network.train(trainData,options);
     return JSON.stringify(network.toJSON(train));
@@ -106,14 +74,14 @@ const trainNetwork = (data, options = optionsTest) => {
 /**
  * 
  * @param {JSON object} data json объект с единичным прецендентом
- * @param {*} networkState 
+ * @param {JSON object} networkState данные с обучением нейросети
  */
-const runNetwork = (data,networkState) => {
+const runNetwork = (data,networkState, biochemistry_types) => {
     const network = new brain.NeuralNetwork();
     network.fromJSON(JSON.parse(networkState));
-    return network.run(renderInput(data));
+    return network.run(renderInput(data, biochemistry_types));
 }
 
-console.log(
-    runNetwork(testData['list'][0],trainNetwork(testData))
-)
+// console.log(
+//     runNetwork(testData['list'][0],trainNetwork(testData), testData['biochemistry_types'])
+// )
