@@ -8,5 +8,4 @@ runNetwork(data,networkState, biochemistry_types)
 @param data - текущий пациент из листа, например data['list'][0]
 @param networkState - JSON объект с состоянием нейросети
 @param biochemistry_types
-
 ```
